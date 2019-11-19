@@ -18,5 +18,6 @@ CREATE TABLE sales(
   purchase_date DATE NOT NULL DEFAULT CURRENT_DATE,
 	sales_price real not null,
 	product_code int  not null,
-	product_title text not null
+	product_title text not null,
+	supplier_id int references suppliers(supplier_id) not null
 );
