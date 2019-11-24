@@ -1,4 +1,4 @@
--- function to gives 10% discounts for the customer's every 10th purchase
+-- function to gives 10% discounts for the loyal customer's every 10th purchase
 CREATE OR REPLACE FUNCTION discount()
 RETURNS trigger AS $discount$
 DECLARE
@@ -6,7 +6,7 @@ DECLARE
     cur_sales CURSOR IS
        SELECT t.salesno,t.sales_price
            FROM (
-                 SELECT *, row_number() OVER(ORDER BY salesno ASC) AS row
+                 SELECT *, row_number() OVER(PARTITION BY custno ORDER BY salesno ASC) AS row
                  FROM sales) t
            WHERE t.row % 10 = 0 and t.purchase_date = CURRENT_DATE;
 BEGIN
