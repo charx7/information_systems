@@ -1,6 +1,7 @@
 pragma solidity ^0.5.12;
 contract MyContract {
     uint256 public proposalCount; // counter that will increment everytime the director sets a new proposal(question)
+    address[] public shareholdersAddresses ; // array with all the sharesholders addresses
     mapping(uint => Proposal) proposals; // use a mapping to keep track of the proposals
     mapping(address => Shareholder) public shareholders; // state variable that stores a `Shareholder` struct for each possible address.
     address owner; // keep track of the owner
@@ -19,8 +20,10 @@ contract MyContract {
     // voter representation    
     struct Shareholder {
         bool voted;  // if true, that person already voted
-        uint vote;   // index of the voted proposal
         bool canVote; // if true they can vote
+        uint[] votedArray; // the array of the voted proposals
+        bool exists; // if the element exists
+        bool canView; // if the person can view approved proposals
     }
     
     // proposal representation
@@ -43,33 +46,57 @@ contract MyContract {
     // Function that sets a proposal can only be run by the director*
     function addProposal(string memory _question) public onlyOwner {
         // check only if there is at least one added proposal
-        if (proposalCount > 0){
-            require(proposals[proposalCount].closed, "Current Proposal is still being voted...");
+        
+        // this will only allow for 1 proposal vote at a time
+        //if (proposalCount > 0){
+        //     require(proposals[proposalCount].closed, "Current Proposal is still being voted...");
             
-        }
+        // }
         incrementCount(); // call to the internal incrementCount function
         proposals[proposalCount] = Proposal(proposalCount, _question, false, 0, 0, false); // add a proposal to the mapping
     } 
     
     // voting count function based on the number of voters? and proposals
-    function countVotes() public onlyOwner returns(uint)  {
+    function countVotes(uint proposal) public onlyOwner returns(uint)  {
         uint currCount;    
-        currCount = proposals[proposalCount].voteCount;
-        uint totalVoted = proposals[proposalCount].nmbrPplVoted;
+        currCount = proposals[proposal].voteCount;
+        uint totalVoted = proposals[proposal].nmbrPplVoted;
         if ((currCount/totalVoted) > (totalVoted - currCount) / totalVoted) {
-            proposals[proposalCount].passed = true; // the proposal passed
+            proposals[proposal].passed = true; // the proposal passed
         }
-        proposals[proposalCount].closed = true; // close the proposal
+        proposals[proposal].closed = true; // close the proposal
         return currCount;
     }
     
     // functions that will allow/deny a vote for a shareholder
     function allowVote(address shareholderAddress) public onlyOwner returns(bool success){
-        shareholders[shareholderAddress].canVote = true;
+        // increment the shareholders count if the shareholder didnt already exist on the mapping
+        if(shareholders[shareholderAddress].exists == false){
+            shareholdersAddresses.push(shareholderAddress);
+            shareholders[shareholderAddress].canVote = true;
+            // mark the shareholder as counted
+            shareholders[shareholderAddress].exists = true;
+        } else {
+            // if they already exist just allow for vote
+            shareholders[shareholderAddress].canVote = true;
+        }
+        
         return true;
     }
+    
     function denyVote(address shareholderAddress) public onlyOwner returns(bool success){
         shareholders[shareholderAddress].canVote = false;
+        return true;
+    }
+    
+    // functions that will allow/deny visibility of the approved proposals
+    function allowVisibility(address shareholderAddress) public onlyOwner returns(bool success){
+        shareholders[shareholderAddress].canView = true;
+        return true;
+    }
+    
+    function denyVisibility(address shareholderAddress) public onlyOwner returns(bool success){
+        shareholders[shareholderAddress].canView = false;
         return true;
     }
     
@@ -84,13 +111,21 @@ contract MyContract {
         // check if the sharesholder is allowed to vote
         require(sender.canVote, "You are not allowed to vote!");
         
-        // if the sender has already voted then ignore
-        require(!sender.voted, "Already voted.");
+        // if the sender has already voted then ignore OLD
+        //require(!sender.voted, "Already voted.");
         
-        // set voted for the sender to true
-        sender.voted = true;
-        sender.vote = proposal;
+        // check if the vote is for a valid proposal
+        require(proposal > 0 && proposal <= proposalCount, "There is not a proposal with that index.");
         
+        // check if the sender has already voted for this proposal
+        for(uint i=0; i<sender.votedArray.length; i ++) {
+            require(sender.votedArray[i] != proposal, "You already voted for this proposal.");
+        }
+        
+        // set voted for the sender of the current proposal
+        sender.votedArray.push(proposal);
+        //sender.voted = true; old
+
         // increment the voting counter for a proposal that was set to true
         if (_vote == true) {
             proposals[proposal].voteCount += 1; 
