@@ -2,6 +2,7 @@ pragma solidity ^0.5.12;
 contract MyContract {
     uint256 public proposalCount; // counter that will increment everytime the director sets a new proposal(question)
     address[] public shareholdersAddresses ; // array with all the sharesholders addresses
+    uint[] passedProposals; // array of passed proposals
     mapping(uint => Proposal) proposals; // use a mapping to keep track of the proposals
     mapping(address => Shareholder) public shareholders; // state variable that stores a `Shareholder` struct for each possible address.
     address owner; // keep track of the owner
@@ -24,6 +25,7 @@ contract MyContract {
         uint[] votedArray; // the array of the voted proposals
         bool exists; // if the element exists
         bool canView; // if the person can view approved proposals
+        uint[] canViewArray; // array of passed proposals
     }
     
     // proposal representation
@@ -58,13 +60,18 @@ contract MyContract {
     
     // voting count function based on the number of voters? and proposals
     function countVotes(uint proposal) public onlyOwner returns(uint)  {
+        // We can only do the voting count once
+        require(!proposals[proposal].closed, "The proposal is already closed.");
+        
         uint currCount;    
         currCount = proposals[proposal].voteCount;
         uint totalVoted = proposals[proposal].nmbrPplVoted;
         if ((currCount/totalVoted) > (totalVoted - currCount) / totalVoted) {
             proposals[proposal].passed = true; // the proposal passed
+            passedProposals.push(proposal); // push to the passed proposals array
         }
         proposals[proposal].closed = true; // close the proposal
+        
         return currCount;
     }
     
@@ -101,6 +108,28 @@ contract MyContract {
     }
     
     // Shareholder functions ---------------------------
+    // passed proposals getter
+    function getPassedProposalsIdx() public view returns(uint[] memory) {
+        Shareholder storage sender = shareholders[msg.sender];
+        // if the shareholder can view passed proposals
+        if (sender.canView == true) { 
+            return passedProposals;
+        }
+    }
+    
+    // get an specific proposal
+    function getProposal(uint proposal) public view  returns(string memory, uint, uint){
+        Shareholder storage sender = shareholders[msg.sender];
+        
+        // needs a require for just passedProposals
+        require(proposals[proposal].passed == true, "The proposal did not pass!");
+        
+        // needs a require if you can see passedProposals
+        require(sender.canView, "The shareholder is not authorized to view passed proposals.");
+    
+        return(proposals[proposal]._question, proposals[proposal].voteCount, proposals[proposal].nmbrPplVoted);
+    }
+    
     // voting function
     function vote(uint proposal, bool _vote) public {
         Shareholder storage sender = shareholders[msg.sender];
