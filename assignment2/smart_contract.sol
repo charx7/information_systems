@@ -20,7 +20,6 @@ contract MyContract {
     
     // voter representation    
     struct Shareholder {
-        bool voted;  // if true, that person already voted
         bool canVote; // if true they can vote
         uint[] votedArray; // the array of the voted proposals
         bool exists; // if the element exists
@@ -47,13 +46,6 @@ contract MyContract {
     // Director functions -------------------------------------------------
     // Function that sets a proposal can only be run by the director*
     function addProposal(string memory _question) public onlyOwner {
-        // check only if there is at least one added proposal
-        
-        // this will only allow for 1 proposal vote at a time
-        //if (proposalCount > 0){
-        //     require(proposals[proposalCount].closed, "Current Proposal is still being voted...");
-            
-        // }
         incrementCount(); // call to the internal incrementCount function
         proposals[proposalCount] = Proposal(proposalCount, _question, false, 0, 0, false); // add a proposal to the mapping
     } 
@@ -144,9 +136,6 @@ contract MyContract {
         
         // check if the sharesholder is allowed to vote
         require(sender.canVote, "You are not allowed to vote!");
-        
-        // if the sender has already voted then ignore OLD
-        //require(!sender.voted, "Already voted.");
         
         // check if the vote is for a valid proposal
         require(proposal > 0 && proposal <= proposalCount, "There is not a proposal with that index.");
