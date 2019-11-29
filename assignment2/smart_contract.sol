@@ -60,6 +60,9 @@ contract MyContract {
     
     // voting count function based on the number of voters? and proposals
     function countVotes(uint proposal) public onlyOwner returns(uint)  {
+        // Dont count if no one has voted
+        require(proposals[proposal].nmbrPplVoted > 0, "No one has voted");
+        
         // We can only do the voting count once
         require(!proposals[proposal].closed, "The proposal is already closed.");
         
@@ -111,6 +114,8 @@ contract MyContract {
     // passed proposals getter
     function getPassedProposalsIdx() public view returns(uint[] memory) {
         Shareholder storage sender = shareholders[msg.sender];
+        // require check for visibility of the sender
+        require(sender.canView == true, "You are not allowed to view the list of passed proposals.");
         // if the shareholder can view passed proposals
         if (sender.canView == true) { 
             return passedProposals;
