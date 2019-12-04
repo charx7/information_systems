@@ -51,7 +51,61 @@ class QuadTree:
 
 		:To be implemented by the student:		
 		"""
-		raise NotImplementedError(":To be implemented by the student:")
+		try:
+			self.quads[depth] # check if we havent reachex max-depth
+			# Generate all the bounding boxes TOP r/l bottom r/l
+			ctr = bbox.centroid()
+			w = bbox.width()
+			h = bbox.height()
+
+			new_depth = depth + 1 # go down 1 level 
+
+			top_right = bb.BoundingBox(
+				ctr[0],
+				ctr[0] + w/2,
+				ctr[1],
+				ctr[1] + h/2 
+			)
+
+			# push the bbs to the list based on the current level
+			self.quads[depth].append(top_right) # we try to go one level down
+			self.recurse(top_right, new_depth)
+			
+			top_left = bb.BoundingBox(
+				ctr[0] - w/2,
+				ctr[0],
+				ctr[1],
+				ctr[1] + h/2
+			)
+
+			# push the bbs to the list based on the current level
+			self.quads[depth].append(top_left) # we try to go one level down
+			self.recurse(top_left, new_depth)
+			
+			lower_left = bb.BoundingBox(
+				ctr[0] - w/2,
+				ctr[0],
+				ctr[1] - h/2,
+				ctr[1]
+			)
+			# push the bbs to the list based on the current level
+			self.quads[depth].append(lower_left) # we try to go one level down
+			self.recurse(lower_left, new_depth)
+			
+			lower_right = bb.BoundingBox(
+				ctr[0],
+				ctr[0] + w/2,
+				ctr[1] - h/2,
+				ctr[1]
+			)
+			# push the bbs to the list based on the current level
+			self.quads[depth].append(lower_right) # we try to go one level down
+			self.recurse(lower_right, new_depth)
+			
+		except KeyError:
+			print('max depth reached')
+			
+		return
 
 	@staticmethod	
 	def at_least(size):

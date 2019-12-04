@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
 	plotter = pl.Plotter(tree,dtb,args)
 
-
+	
 	# Testing: Implementing the QuadTree
 	if args.quadtree:
 		quadtree = qt.QuadTree(tree.bounding_box(), args.quadtree)
