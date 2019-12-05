@@ -206,21 +206,25 @@ class KDTree:
 		node_data = self.storage[sidx.storage()]
 		# check if we reached the end of the recursion ie, the current node is a leaf
 		if 'elements' in node_data:
-			return node_data['elements']
+			res = node_data['elements']
+			return res
 
 		# get the value of the partition
 		partition = node_data['partition']
 		axis = node_data['axis']
 		curr_point_compare = point[axis]
 		
+		rec_ret = []
 		if curr_point_compare <= partition:
 			# then recurse to the left
 			next_node = sidx.left()
-			self.closest(point, next_node)
+			rec_ret.extend(self.closest(point, next_node))
 		else:
 			# then recurse to the right
 			next_node = sidx.right()
-			self.closest(point, next_node)
+			rec_ret.extend(self.closest(point, next_node))
+	
+		return rec_ret
 
 if __name__ == '__main__':
 		
