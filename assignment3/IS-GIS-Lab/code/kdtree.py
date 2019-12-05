@@ -202,13 +202,26 @@ class KDTree:
 		
 		>>> print(tree.closest([7,2]))	
 		<<< [5 6]	
-
-		:To be implemented by the student:	
 		"""
-		raise NotImplementedError(":To be implemented by the student:")					
-		
+		node_data = self.storage[sidx.storage()]
+		# check if we reached the end of the recursion ie, the current node is a leaf
+		if 'elements' in node_data:
+			return node_data['elements']
 
-	
+		# get the value of the partition
+		partition = node_data['partition']
+		axis = node_data['axis']
+		curr_point_compare = point[axis]
+		
+		if curr_point_compare <= partition:
+			# then recurse to the left
+			next_node = sidx.left()
+			self.closest(point, next_node)
+		else:
+			# then recurse to the right
+			next_node = sidx.right()
+			self.closest(point, next_node)
+
 if __name__ == '__main__':
 		
 	data = [[2,3], [5,4], [9,6], [4,7], [8,1], [7,2]]
