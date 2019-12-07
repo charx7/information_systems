@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Current File",
+      "name": "Python: Simple QuadTree",
       "type": "python",
       "request": "launch",
       "program": "${file}",
@@ -15,6 +15,27 @@
         "4",
         "--quadshow",
         "True"
+      ]
+    },
+    {
+      "name": "Python: KdTree",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "args": [
+        "--filename",
+        "./assignment3/IS-GIS-Lab/data/addressen_groningen/adressen_groningen.shp",
+        "--bbox-depth",
+        "8",
+        "--max-depth",
+        "9",
+        "--plot",
+        "kdtree-bb",
+        "--quadtree",
+        "8",
+        "--quadlevel",
+        "8"
       ]
     }
   ]

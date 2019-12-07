@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 import matplotlib.patches as mpatches
 import matplotlib.colors as mcolors
 import numpy as np
-
+import math
 # lab
 import quadtree as qt
 
@@ -78,9 +78,40 @@ if __name__ == '__main__':
 	
 	# Using the QuadTree depth to subsample the KDTree		
 	if args.quadtree:
-	# :To be implemented by the student:
-		raise NotImplementedError(":To be implemented by the student:")		
+		max_depth = list(tree.partitions().keys())[-1] # remove?
+		# update the quad field for every record on the db
+		#max_quad_level = args.quadlevel
+		max_quad_level = max_depth
 
+		for key in list(dtb.db.keys()):
+			dtb.update_field(key, 'quad', max_quad_level)
+
+		# iterate through all levels of the trees in reverse
+		for level in reversed(list(tree.partitions().keys())):
+			# obtain the centroid for every box inside that level
+			for bound_box in tree.partitions()[level]:
+				# obtain the centroid
+				curr_centroid = bound_box.centroid()
+				closest_list = tree.closest(curr_centroid)
+				# calculate the closest point to the centroid inside the bb
+				closest_point = dtb.db[closest_list[0]] # set the min to the first one YOLO
+				closest_idx = closest_list[0]
+				_, cst_x, cst_y, _ = closest_point # destruct the closest pt coordinates
+				# calculate the distance to the centroid
+				cls_distance = math.sqrt((curr_centroid[0] - cst_x)**(2) + (curr_centroid[1] - cst_y)**2) 
+				
+				for point_idx in closest_list:
+					currPoint = dtb.db[point_idx] # get the curr point
+					_, curr_x, curr_y, _ = currPoint # destruct the pt coordinates
+					curr_dst = math.sqrt((curr_centroid[0] - curr_x)**(2) + (curr_centroid[1] - curr_y)**2)
+					# if the current distance on the bb is < then min then replace
+					if curr_dst < cls_distance:
+						cls_distance = curr_dst
+						closest_point = currPoint
+						closest_idx = point_idx
+				# after finding the closest point inside the bb then we update the quad field to curr level
+				dtb.update_field(closest_idx, 'quad', level)
+				
 	plotter.plot()
 
 	
