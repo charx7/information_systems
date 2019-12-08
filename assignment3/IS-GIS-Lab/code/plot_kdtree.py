@@ -78,18 +78,16 @@ if __name__ == '__main__':
 	
 	# Using the QuadTree depth to subsample the KDTree		
 	if args.quadtree:
-		max_depth = list(tree.partitions().keys())[-1] # remove?
 		# update the quad field for every record on the db
 		#max_quad_level = args.quadlevel
-		max_quad_level = max_depth
-
+		max_quad_level = 9
 		for key in list(dtb.db.keys()):
 			dtb.update_field(key, 'quad', max_quad_level)
-
-		# iterate through all levels of the trees in reverse
-		for level in reversed(list(tree.partitions().keys())):
+		
+		# iterate through all levels of the quadtree in reverse order
+		for level in reversed(list(quadtree.quadrants())):
 			# obtain the centroid for every box inside that level
-			for bound_box in tree.partitions()[level]:
+			for bound_box in quadtree.quadrants()[level]:
 				# obtain the centroid
 				curr_centroid = bound_box.centroid()
 				closest_list = tree.closest(curr_centroid)

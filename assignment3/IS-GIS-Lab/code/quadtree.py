@@ -103,8 +103,8 @@ class QuadTree:
 			self.recurse(lower_right, new_depth)
 			
 		except KeyError:
-			print('max depth reached')
-			
+			pass 
+		
 		return
 
 	@staticmethod	
