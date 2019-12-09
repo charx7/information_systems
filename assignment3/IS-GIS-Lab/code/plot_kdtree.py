@@ -79,8 +79,7 @@ if __name__ == '__main__':
 	# Using the QuadTree depth to subsample the KDTree		
 	if args.quadtree:
 		# update the quad field for every record on the db
-		#max_quad_level = args.quadlevel
-		max_quad_level = 9
+		max_quad_level = args.quadlevel
 		for key in list(dtb.db.keys()):
 			dtb.update_field(key, 'quad', max_quad_level)
 		
