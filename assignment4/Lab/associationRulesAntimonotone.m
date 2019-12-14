@@ -68,38 +68,53 @@ for l = 1:freqCount - 1
     for i = 1:itemsCount
         % get the current item
         currItem = freqitemsList(i,:);
+        % the support of I just needs to be calculated once per itemset
+        supI = support{size(currItem, 2)}(i);
         
-        % the items that will be removed form the subsets because of
-        % antimonotonity
+        % the items that will determine which subsets are to be removed 
+        % because of antimonotonicity
         removeFromCombs = {}; 
+        pruneLattice = false;
         % loop for every possible comb on the itemset
         for depth = 1:size(currItem,2) - 1
             % get the possible item consequents of the rule
             H = nchoosek(currItem, depth);
             
             % Anti-monotone property
-            % create the subsets from the matrix off all subsets
+            % create the valid subsets from the matrix off all subsets of
+            % the current lattice level
             validSbs = []; 
-            for row = 1:size(removeFromCombs,1)
-                % get the non valid subset from past levels of the lattice
-                currRow = removeFromCombs{row,1};
-                % will be used for the subset computation for varying row
-                % sizes
-                removeSize = removeFromCombs{row,2};
-                % check if the element to remove is present 
-                member = ismember(H,currRow);
-                % calculate the sum of element coincidences
-                memberSum = sum(member,2);
-                % if the sum per row >= to the size of the element to 
-                % remove then that element is a subset so it needs to be 
-                % removed from H, this way we get the valid indexes
-                memberIdxs = find(memberSum < removeSize); 
-                % intersect the valid indexes for all elemenents to remove
-                % form the combinations.
-                if size(validSbs,1) == 0 && row == 1
-                    validSbs = [validSbs, memberIdxs];
-                else
-                    validSbs = intersect(validSbs, memberIdxs);
+            if pruneLattice == false
+                for row = 1:size(removeFromCombs,1)
+                    % get the non valid subset from past levels of the lattice
+                    currRow = removeFromCombs{row,1};
+                    % will be used for the subset computation for varying row
+                    % sizes
+                    removeSize = removeFromCombs{row,2};
+                    % check if the element to remove is present 
+                    member = ismember(H,currRow);
+                    % calculate the sum of element coincidences
+                    memberSum = sum(member,2);
+                    % if the sum per row >= to the size of the element to 
+                    % remove then that element is a subset so it needs to be 
+                    % removed from H, this way we get the valid indexes
+                    memberIdxs = find(memberSum < removeSize); 
+                    % intersect the valid indexes for all elemenents to remove
+                    % form the combinations.
+                    if size(validSbs,1) == 0 && row == 1
+                        validSbs = [validSbs, memberIdxs];
+                    else
+                        validSbs = intersect(validSbs, memberIdxs);
+                        % check if the intersection is void so we can break the
+                        % loop
+                        if size(validSbs,1) == 0
+                            % set the prune to true so that we dont
+                            % continue checking for valid subsets further
+                            % down the lattice
+                            pruneLattice = true;
+                            break
+                        end
+                    end
                 end
             end
             
@@ -115,7 +130,7 @@ for l = 1:freqCount - 1
                 antecedent = setdiff(currItem, consequent);
                 
                 % confidence calculation
-                supI = support{size(currItem, 2)}(i);
+                %supI = support{size(currItem, 2)}(i);
                 tmpTbl = ismember(frequentItems{1,size(antecedent,2)}, antecedent, 'rows');
                 suppRowIdx = find(tmpTbl == 1);
                 supS = support{1, size(antecedent,2)}(suppRowIdx);
