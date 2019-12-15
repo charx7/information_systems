@@ -136,7 +136,7 @@ for l = 1:freqCount - 1
                 supS = support{1, size(antecedent,2)}(suppRowIdx);
                 
                 conf = supI / supS; % confidence computation
-                if conf > minconf
+                if conf >= minconf
                     % add to the rule array
                     rules{rulesCount, 1} = antecedent;
                     rules{rulesCount, 2} = consequent;
